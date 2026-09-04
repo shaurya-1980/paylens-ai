@@ -10,6 +10,9 @@ function Register({ onRegister, onBackToLogin }) {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const API_URL =
+    import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
+
   const handleRegister = async (e) => {
     e.preventDefault();
 
@@ -35,7 +38,7 @@ function Register({ onRegister, onBackToLogin }) {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/auth/register",
+        `${API_URL}/auth/register`,
         {
           method: "POST",
           headers: {
