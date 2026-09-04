@@ -1,7 +1,10 @@
+import os
+
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import func
+from dotenv import load_dotenv
 
 from auth import router as auth_router
 from analytics import get_failure_analysis
@@ -9,6 +12,18 @@ from services.ai_service import generate_ai_insight
 
 from database import Base, engine, get_db
 from models import Transaction
+
+
+# ============================================================
+# LOAD ENVIRONMENT VARIABLES
+# ============================================================
+
+load_dotenv()
+
+FRONTEND_URL = os.getenv(
+    "FRONTEND_URL",
+    "http://localhost:5173"
+)
 
 
 # ============================================================
@@ -38,6 +53,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://127.0.0.1:5173",
+        FRONTEND_URL,
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -228,9 +244,6 @@ def get_analytics(
 
     # ========================================================
     # ADVANCED ANALYTICS
-    #
-    # Get payment methods, failure reasons and revenue trend
-    # from analytics.py
     # ========================================================
 
     failure_analysis_data = get_failure_analysis(db)
@@ -240,10 +253,6 @@ def get_analytics(
     # ========================================================
 
     return {
-        # ----------------------------------------------------
-        # Basic dashboard statistics
-        # ----------------------------------------------------
-
         "total_transactions": total_transactions,
 
         "total_revenue": round(
@@ -260,19 +269,11 @@ def get_analytics(
             2
         ),
 
-        # ----------------------------------------------------
-        # Payment method breakdown
-        # ----------------------------------------------------
-
         "payments_by_method":
             failure_analysis_data.get(
                 "payments_by_method",
                 {}
             ),
-
-        # ----------------------------------------------------
-        # Failure reason breakdown
-        # ----------------------------------------------------
 
         "failures_by_reason":
             failure_analysis_data.get(
@@ -280,19 +281,11 @@ def get_analytics(
                 {}
             ),
 
-        # ----------------------------------------------------
-        # Revenue trend by day
-        # ----------------------------------------------------
-
         "revenue_by_day":
             failure_analysis_data.get(
                 "revenue_by_day",
                 {}
             ),
-
-        # ----------------------------------------------------
-        # Additional failure analysis data
-        # ----------------------------------------------------
 
         "failures_by_method":
             failure_analysis_data.get(
